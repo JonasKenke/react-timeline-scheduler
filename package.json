@@ -1,6 +1,6 @@
 {
   "name": "@jonaskenke/react-timeline-scheduler",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A configurable React component for displaying schedules in calendar and timeline views",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
