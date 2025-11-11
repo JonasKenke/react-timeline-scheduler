@@ -20,12 +20,12 @@ import {
 import { de } from 'date-fns/locale';
 import {
   ChevronLeft,
-
   ChevronRight,
   Calendar as CalendarIcon,
   Clock,
   Plus,
   BarChart3,
+  Users,
 } from 'lucide-react';
 
 import {
@@ -889,14 +889,235 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
 
                     {/* Group Rows */}
                     {(() => {
+                      // Check if any groups have groupId
+                      const hasGroups = groups.some(group => group.groupId);
+
+                      if (!hasGroups) {
+                        // No groups, render like before
+                        return groups.map((group) => {
+                        const employeeItems = dateRange.flatMap(date =>
+                          getItemsForGroupAndDate(group.id, date).map(item => ({
+                            ...item,
+                            displayDate: date
+                          }))
+                        );
+
+                        // Calculate vertical positions based on overlaps per day
+                        const verticalLevels: number[] = [];
+                        dateRange.forEach(date => {
+                          const dayItems = employeeItems.filter(item => isSameDay(item.displayDate, date));
+                          const dayLevels = calculateVerticalPosition(dayItems);
+                          verticalLevels.push(...dayLevels);
+                        });
+
+                        return (
+                          <div key={group.id} className="border-t">
+                            <div className="grid" style={{
+                              gridTemplateColumns: `200px repeat(${dateRange.length * 24}, 1fr)`
+                            }}>
+                              <div className="p-4 border-r bg-background sticky left-0 z-10">
+                                <div className="flex items-center gap-3">
+                                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
+                                    group.color || EMPLOYEE_COLORS[groups.indexOf(group) % EMPLOYEE_COLORS.length]
+                                  }`}>
+                                    {showGroupAvatar && group.avatar ? (
+                                      <img src={group.avatar} alt={group.name} className="w-full h-full rounded-full object-cover" />
+                                    ) : (
+                                      group.name.split(' ').map(n => n[0]).join('')
+                                    )}
+                                  </div>
+                                  <div>
+                                    <div className="font-semibold">{group.name}</div>
+                                    {showGroupRole && group.role && (
+                                      <div className="text-sm text-muted-foreground">{group.role}</div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Timeline */}
+                              <div
+                                className={`relative col-span-full border-r bg-background ${
+                                  dropTarget?.groupId === group.id ? 'bg-primary/10' : ''
+                                }`}
+                                style={{
+                                  minHeight: employeeItems.length > 0 ? `${Math.max(80, (Math.max(...verticalLevels) + 1) * 56)}px` : '80px',
+                                  gridColumn: '2 / -1'
+                                }}
+                                onDoubleClick={() => handleCreateClick(group.id, currentDate)}
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  // Calculate the time based on mouse position for timeline view
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  const x = e.clientX - rect.left;
+                                  const totalWidth = rect.width;
+                                  const percentage = x / totalWidth;
+                                  const totalMinutes = dateRange.length * 24 * 60;
+                                  const minutes = Math.floor(percentage * totalMinutes);
+                                  const hours = Math.floor((minutes % (24 * 60)) / 60);
+                                  const mins = (minutes % (24 * 60)) % 60;
+                                  const time = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+
+                                  const dayIndex = Math.floor(minutes / (24 * 60));
+                                  const targetDate = dateRange[dayIndex] || currentDate;
+
+                                  handleDragOver(e, group.id, targetDate, time);
+                                }}
+                                onDragLeave={handleDragLeave}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  // Calculate the time based on mouse position
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  const x = e.clientX - rect.left;
+                                  const totalWidth = rect.width;
+                                  const percentage = x / totalWidth;
+                                  const totalMinutes = dateRange.length * 24 * 60;
+                                  const minutes = Math.floor(percentage * totalMinutes);
+                                  const hours = Math.floor((minutes % (24 * 60)) / 60);
+                                  const mins = (minutes % (24 * 60)) % 60;
+                                  const time = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+
+                                  const dayIndex = Math.floor(minutes / (24 * 60));
+                                  const targetDate = dateRange[dayIndex] || currentDate;
+
+                                  handleDrop(e, group.id, targetDate, time);
+                                }}
+                              >
+                                {/* Grid lines */}
+                                <div className="absolute inset-0 grid" style={{
+                                  gridTemplateColumns: `repeat(${dateRange.length * 24}, 1fr)`
+                                }}>
+                                  {Array.from({ length: dateRange.length * 24 }, (_, i) => (
+                                    <div key={i} className={`border-r ${(i % 24) % 6 === 0 ? 'border-r-2' : ''}`} />
+                                  ))}
+                                </div>
+
+                                {/* Items (no inner padding so percentage positions match grid) */}
+                                <div className="absolute inset-0">
+                                  {/* Current time line */}
+                                  {(() => {
+                                    const now = new Date();
+                                    const todayIndex = dateRange.findIndex(date => isSameDay(date, now));
+                                    if (todayIndex !== -1) {
+                                      const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes();
+                                      const totalMinutes = dateRange.length * 24 * 60;
+                                      const dayOffset = todayIndex * 24 * 60;
+                                      const position = ((dayOffset + minutesSinceMidnight) / totalMinutes) * 100;
+                                      return (
+                                        <div
+                                          className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-10 pointer-events-none"
+                                          style={{ left: `${position}%` }}
+                                          title={`Current time: ${format(now, 'HH:mm')}`}
+                                        ></div>
+                                      );
+                                    }
+                                    return null;
+                                  })()}
+
+                                  {/* Drop placeholder for this group (timeline) */}
+                                  {draggedItem && dropTarget && dropTarget.groupId === group.id && (
+                                    (() => {
+                                      const pos = computeDropPos(dropTarget.date, dropTarget.time, draggedItem);
+                                      return (
+                                        <div
+                                          className="absolute pointer-events-none z-20"
+                                          style={{ left: `${pos.left}%`, width: `${Math.max(pos.width, 2)}%`, top: '8px' }}
+                                        >
+                                          <div className="h-10 rounded bg-white/40 border-2 border-dashed border-white/60" />
+                                          <div className="absolute -top-6 left-0 text-[11px] rounded bg-muted/90 text-black px-2 py-1 whitespace-nowrap">
+                                            {draggedItem.allDay
+                                              ? draggedItem.title
+                                              : (() => {
+                                                  // Calculate the proposed new time range
+                                                  const [hours, minutes] = dropTarget.time!.split(':').map(Number);
+                                                  let startMinutes = hours * 60 + minutes;
+                                                  if (viewMode === 'day' || viewMode === 'week') {
+                                                    startMinutes = snapToInterval(startMinutes, 15);
+                                                  }
+                                                  const originalStartMinutes = timeToMinutes(draggedItem.startTime!);
+                                                  const originalEndMinutes = timeToMinutes(draggedItem.endTime!);
+                                                  const duration = originalEndMinutes - originalStartMinutes;
+                                                  const newStartHours = Math.floor(startMinutes / 60);
+                                                  const newStartMinutes = startMinutes % 60;
+                                                  const newEndMinutes = startMinutes + duration;
+                                                  const newEndHours = Math.floor(newEndMinutes / 60);
+                                                  const newEndMinutesRemainder = newEndMinutes % 60;
+                                                  const newStartTime = `${String(newStartHours).padStart(2, '0')}:${String(newStartMinutes).padStart(2, '0')}`;
+                                                  const newEndTime = `${String(newEndHours).padStart(2, '0')}:${String(newEndMinutesRemainder).padStart(2, '0')}`;
+                                                  return `${draggedItem.title} • ${newStartTime}-${newEndTime}`;
+                                                })()
+                                            }
+                                          </div>
+                                        </div>
+                                      );
+                                    })()
+                                  )}
+
+                                  {employeeItems.map((item, itemIndex) => {
+                                    const position = calculateItemPosition(item);
+                                    const dayOffset = viewMode === 'week'
+                                      ? dateRange.findIndex(d => isSameDay(d, item.displayDate)) * 24
+                                      : 0;
+                                    const left = viewMode === 'day'
+                                      ? position.left
+                                      : ((dayOffset + position.startMinutes / 60) / (dateRange.length * 24)) * 100;
+                                    const verticalLevel = verticalLevels[itemIndex];
+
+                                    return (
+                                      <div
+                                        key={item.id}
+                                        className={`absolute rounded px-2 py-1 text-white text-xs cursor-move hover:opacity-80 transition-opacity ${
+                                          item.allDay
+                                            ? `${item.color || itemTypes[item.type || 'default']?.color || 'bg-purple-500'} border-2 border-purple-400 font-bold`
+                                            : item.color || itemTypes[item.type || 'default']?.color || 'bg-blue-500'
+                                        } ${position.duration < 60 && !item.allDay ? 'text-[10px] px-1 py-0.5' : ''}`}
+                                        style={{
+                                          left: item.allDay && viewMode === 'week'
+                                            ? `${(dateRange.findIndex(d => isSameDay(d, item.displayDate)) / dateRange.length) * 100}%`
+                                            : viewMode === 'day'
+                                            ? `${position.left}%`
+                                            : `${((dayOffset + position.startMinutes / 60) / (dateRange.length * 24)) * 100}%`,
+                                          width: item.allDay && viewMode === 'week'
+                                            ? `${100 / dateRange.length}%`
+                                            : viewMode === 'day'
+                                            ? `${position.width}%`
+                                            : `${(position.duration / 60 / (dateRange.length * 24)) * 100}%`,
+                                          top: `${verticalLevel * 56 + 8}px`,
+                                        }}
+                                        title={item.allDay ? `${item.title} (All Day)` : `${item.title} (${item.startTime}-${item.endTime})`}
+                                        onClick={() => handleItemClick(item)}
+                                        draggable={canEdit}
+                                        onDragStart={(e) => handleDragStart(e, item)}
+                                        onDragEnd={handleDragEnd}
+                                      >
+                                        <div className="font-semibold truncate">{item.title}</div>
+                                        {item.allDay ? (
+                                          <div className="text-xs opacity-90">All Day</div>
+                                        ) : (viewMode === 'day' ? position.duration >= 30 : position.duration >= 180) && (
+                                          <div className="text-xs opacity-90">
+                                            {item.startTime}-{item.endTime}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      });
+                      }
+
                       // Group groups by groupId
                       const groupedGroups = groups.reduce((acc, group) => {
-                        const key = group.groupId || '__ungrouped__';
+                        const key = group.groupId || 'Unassigned';
                         if (!acc[key]) acc[key] = [];
                         acc[key].push(group);
                         return acc;
                       }, {} as Record<string, G[]>);
 
+                      // Helper function to render a group row (same as normal rendering)
                       const renderGroupRow = (group: G) => {
                         const employeeItems = dateRange.flatMap(date =>
                           getItemsForGroupAndDate(group.id, date).map(item => ({
@@ -1111,11 +1332,8 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                         );
                       };
 
+                      // Helper function to render a group header
                       const renderGroupHeader = (groupId: string, subgroups: G[]) => {
-                        if (groupId === '__ungrouped__') {
-                          return subgroups.map(group => renderGroupRow(group));
-                        }
-
                         return (
                           <>
                             {/* Group Header */}
@@ -1126,7 +1344,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                                 <div className="p-3 border-r bg-muted sticky left-0 z-10">
                                   <div className="flex items-center gap-2">
                                     <div className="w-6 h-6 rounded bg-muted-foreground/20 flex items-center justify-center text-xs font-semibold">
-                                      📁
+                                      <Users className="w-4 h-4" />
                                     </div>
                                     <div className="font-semibold text-sm text-muted-foreground">
                                       {groupId}
@@ -1191,14 +1409,112 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                 </div>
 
                 {(() => {
+                  // Check if any groups have groupId for calendar view
+                  const hasGroups = groups.some(group => group.groupId);
+
+                  if (!hasGroups) {
+                    // No groups, render like before
+                    return groups.map((group) => {
+                      const employeeItems = viewMode === 'year'
+                        ? dateRange.flatMap(month => getItemsForGroupAndMonth(group.id, month))
+                        : dateRange.flatMap(date => getItemsForGroupAndDate(group.id, date));
+
+                      return (
+                        <div key={group.id} className="border-t">
+                          <div className="grid" style={{
+                            gridTemplateColumns: viewMode === 'year'
+                              ? '200px repeat(12, 1fr)'
+                              : `200px repeat(${dateRange.length}, 1fr)`
+                          }}>
+                            <div className="p-4 border-r bg-background">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
+                                  group.color || EMPLOYEE_COLORS[groups.indexOf(group) % EMPLOYEE_COLORS.length]
+                                }`}>
+                                  {showGroupAvatar && group.avatar ? (
+                                    <img src={group.avatar} alt={group.name} className="w-full h-full rounded-full object-cover" />
+                                  ) : (
+                                    group.name.split(' ').map((n: string) => n[0]).join('')
+                                  )}
+                                </div>
+                                <div>
+                                  <div className="font-semibold">{group.name}</div>
+                                  {showGroupRole && group.role && (
+                                    <div className="text-sm text-muted-foreground">{group.role}</div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div
+                              className={`relative col-span-full border-r ${
+                                dropTarget?.groupId === group.id ? 'bg-primary/10' : ''
+                              }`}
+                              style={{
+                                minHeight: employeeItems.length > 0 ? `${Math.max(80, employeeItems.length * 36)}px` : '80px',
+                                gridColumn: '2 / -1'
+                              }}
+                              onDragOver={(e) => handleDragOver(e, group.id, currentDate)}
+                              onDragLeave={handleDragLeave}
+                              onDrop={(e) => handleDrop(e, group.id, currentDate)}
+                            >
+                              <div className="absolute inset-0 grid" style={{
+                                gridTemplateColumns: viewMode === 'year'
+                                  ? 'repeat(12, 1fr)'
+                                  : `repeat(${dateRange.length}, 1fr)`
+                              }}>
+                                {dateRange.map((_, index) => (
+                                  <div key={index} className="border-r last:border-r-0" />
+                                ))}
+                              </div>
+
+                              <div className="absolute inset-0 p-2">
+                                {employeeItems.map((item, itemIndex) => {
+                                  const columnIndex = viewMode === 'year'
+                                    ? dateRange.findIndex(d => d.getMonth() === item.dateObj.getMonth() && d.getFullYear() === item.dateObj.getFullYear())
+                                    : dateRange.findIndex(d => isSameDay(d, item.dateObj));
+
+                                  return (
+                                    <div
+                                      key={item.id}
+                                      className={`absolute rounded px-2 py-1 text-white text-xs cursor-move hover:opacity-80 transition-opacity ${
+                                        item.color || itemTypes[item.type || 'default']?.color || 'bg-blue-500'
+                                      }`}
+                                      style={{
+                                        left: `${(columnIndex / dateRange.length) * 100}%`,
+                                        width: `${100 / dateRange.length}%`,
+                                        top: `${itemIndex * 36 + 8}px`,
+                                      }}
+                                      title={`${item.title} (${item.startTime}-${item.endTime})`}
+                                      onClick={() => handleItemClick(item)}
+                                      draggable={canEdit}
+                                      onDragStart={(e) => handleDragStart(e, item)}
+                                      onDragEnd={handleDragEnd}
+                                    >
+                                      <div className="font-semibold truncate">{item.title}</div>
+                                      <div className="text-xs opacity-90">
+                                        {item.startTime}-{item.endTime}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    });
+                  }
+
                   // Group groups by groupId for calendar view
                   const groupedGroups = groups.reduce((acc, group) => {
-                    const key = group.groupId || '__ungrouped__';
+                    const key = group.groupId || 'Unassigned';
                     if (!acc[key]) acc[key] = [];
                     acc[key].push(group);
                     return acc;
                   }, {} as Record<string, G[]>);
 
+                  // Helper function to render a calendar group row
                   const renderCalendarGroupRow = (group: G) => {
                     const employeeItems = viewMode === 'year'
                       ? dateRange.flatMap(month => getItemsForGroupAndMonth(group.id, month))
@@ -1290,11 +1606,8 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                     );
                   };
 
+                  // Helper function to render a calendar group header
                   const renderCalendarGroupHeader = (groupId: string, subgroups: G[]) => {
-                    if (groupId === '__ungrouped__') {
-                      return subgroups.map(group => renderCalendarGroupRow(group));
-                    }
-
                     return (
                       <>
                         {/* Group Header */}
@@ -1307,7 +1620,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                             <div className="p-3 border-r bg-muted sticky left-0 z-10">
                               <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 rounded bg-muted-foreground/20 flex items-center justify-center text-xs font-semibold">
-                                  📁
+                                  <Users className="w-4 h-4" />
                                 </div>
                                 <div className="font-semibold text-sm text-muted-foreground">
                                   {groupId}

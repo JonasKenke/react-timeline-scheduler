@@ -88,7 +88,7 @@ export default App;
 
 ## � Demo
 
-A demo can be found here: https://timeline.kreativhub.tech
+A demo can be found here: https://timeline.kreativhub.tech/example
 
 ---
 
@@ -194,8 +194,9 @@ const groups = [
 ```
 
 In this example:
+
 - **Engineering** group contains John, Bob, and Alice
-- **Design** group contains Jane and Charlie  
+- **Design** group contains Jane and Charlie
 - **Diana** appears as a standalone resource (no group header)
 
 ---
