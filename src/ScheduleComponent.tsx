@@ -1363,7 +1363,9 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                       };
 
                       return Object.entries(groupedGroups).map(([groupId, subgroups]) =>
-                        renderGroupHeader(groupId, subgroups)
+                        <div key={groupId}>
+                          {renderGroupHeader(groupId, subgroups)}
+                        </div>
                       );
                     })()}
                   </div>
@@ -1639,7 +1641,9 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                   };
 
                   return Object.entries(groupedGroups).map(([groupId, subgroups]) =>
-                    renderCalendarGroupHeader(groupId, subgroups)
+                    <div key={groupId}>
+                      {renderCalendarGroupHeader(groupId, subgroups)}
+                    </div>
                   );
                 })()}
               </>
