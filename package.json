@@ -52,5 +52,13 @@
     "planning"
   ],
   "author": "Jonas Kenke",
-  "license": "AGPL-3.0"
+  "license": "AGPL-3.0-only",
+  "homepage": "https://timeline.kreativhub.tech",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JonasKenke/react-timeline-scheduler.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JonasKenke/react-timeline-scheduler/issues"
+  }
 }
