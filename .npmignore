@@ -2,6 +2,8 @@ node_modules/
 src/
 .github/
 example/
+images/
+*.md
 tsconfig*.json
 tsup.config.ts
 postcss.config.mjs

@@ -26,7 +26,7 @@ A powerful, customizable React component for displaying schedules in both calend
 
 For commercial licensing, please join the [Waitlist](https://form.kreativhub.tech/s/cmht3avol000gmy01q6fnbji9) or [Contact us](jonas.kenke@gmail.com).
 
-See [LICENSE](LICENSE) and [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md) for details.
+See [LICENSE](https://github.com/JonasKenke/react-timeline-scheduler/blob/main/LICENCE) and [COMMERCIAL-LICENSE.md](https://github.com/JonasKenke/react-timeline-scheduler/blob/main/COMMERCIAL-LICENSE.md) for details.
 
 ---
 
@@ -96,20 +96,20 @@ A demo can be found here: https://timeline.kreativhub.tech
 Below are a few screenshots demonstrating the component in different views and responsive sizes.
 
 <p align="center">
-  <img src="images/Screenshot_20251110_102557.png" alt="Schedule timeline - screenshot 1" width="720"/>
+  <img src="https://raw.githubusercontent.com/JonasKenke/react-timeline-scheduler/main/images/Screenshot_20251110_102557.png" alt="Schedule timeline - screenshot 1" width="720"/>
 </p>
 
 **Figure 1.** Timeline view showing grouped resources and item bars.
 
 <p align="center">
-  <img src="images/Screenshot_20251110_102610.png" alt="Schedule timeline - screenshot 2" width="720"/>
+  <img src="https://raw.githubusercontent.com/JonasKenke/react-timeline-scheduler/main/images/Screenshot_20251110_102610.png" alt="Schedule timeline - screenshot 2" width="720"/>
 </p>
 
 **Figure 2.** Calendar view with color-coded item types.
 
 <p align="center">
-  <img src="images/Screenshot_20251110_102615.png" alt="Schedule timeline - screenshot 3" width="420"/>
-  <img src="images/Screenshot_20251110_102637.png" alt="Schedule timeline - screenshot 4" width="420"/>
+  <img src="https://raw.githubusercontent.com/JonasKenke/react-timeline-scheduler/main/images/Screenshot_20251110_102615.png" alt="Schedule timeline - screenshot 3" width="420"/>
+  <img src="https://raw.githubusercontent.com/JonasKenke/react-timeline-scheduler/main/images/Screenshot_20251110_102637.png" alt="Schedule timeline - screenshot 4" width="420"/>
 </p>
 
 ---
@@ -332,7 +332,7 @@ We welcome contributions! Please feel free to submit issues and pull requests.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+See [CONTRIBUTING.md](https://github.com/JonasKenke/react-timeline-scheduler/blob/main/CONTRIBUTING.md) for more details.
 
 ---
 
@@ -354,7 +354,7 @@ You can test all features fully under the AGPL license, but commercial use requi
 
 This project is licensed under the GNU Affero General Public License v3 (AGPLv3). See the [LICENSE](LICENSE) file for details.
 
-Commercial use requires a separate commercial license. See [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md).
+Commercial use requires a separate commercial license. See [COMMERCIAL-LICENSE.md](https://github.com/JonasKenke/react-timeline-scheduler/blob/main/COMMERCIAL-LICENSE.md).
 
 ---
 
