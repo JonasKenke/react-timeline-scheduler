@@ -9,6 +9,7 @@ A powerful, customizable React component for displaying schedules in both calend
 
 - 📅 **Calendar View**: Traditional calendar layout with day/week/month/year views
 - 📊 **Timeline View**: Timeline visualization for project management and scheduling
+- 👥 **Resource Grouping**: Organize resources into groups with visual headers
 - 🎨 **Fully Customizable**: Configure colors, types, and styling with ease
 - 📱 **Responsive Design**: Mobile-friendly and responsive across all devices
 - 🔧 **TypeScript Support**: Full TypeScript support with comprehensive type definitions
@@ -148,6 +149,7 @@ interface BaseGroup {
   role?: string; // Optional role/title
   color?: string; // Optional custom color (hex or CSS class)
   avatar?: string; // Optional avatar URL
+  groupId?: string; // Optional group identifier for grouping resources
   // ...any additional custom fields
 }
 ```
@@ -174,7 +176,31 @@ interface BaseScheduleItem {
 
 ---
 
-## 🔧 Props API
+## � Grouping Resources
+
+Groups can be organized into logical groups using the `groupId` field. Resources with the same `groupId` will be displayed together under a group header in both timeline and calendar views.
+
+### Example with Groups
+
+```
+const groups = [
+  { id: "1", name: "John Doe", role: "Developer", groupId: "engineering" },
+  { id: "2", name: "Jane Smith", role: "Designer", groupId: "design" },
+  { id: "3", name: "Bob Johnson", role: "Manager", groupId: "engineering" },
+  { id: "4", name: "Alice Brown", role: "Senior Developer", groupId: "engineering" },
+  { id: "5", name: "Charlie Wilson", role: "UX Designer", groupId: "design" },
+  { id: "6", name: "Diana Prince", role: "Project Manager" }, // No groupId - standalone
+];
+```
+
+In this example:
+- **Engineering** group contains John, Bob, and Alice
+- **Design** group contains Jane and Charlie  
+- **Diana** appears as a standalone resource (no group header)
+
+---
+
+## �🔧 Props API
 
 | Prop           | Type                                             | Default      | Description                              |
 | -------------- | ------------------------------------------------ | ------------ | ---------------------------------------- |

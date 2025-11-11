@@ -9,6 +9,7 @@ export interface BaseGroup {
   role?: string;
   color?: string;
   avatar?: string;
+  groupId?: string; // Optional group ID for grouping items
 }
 
 // Alias for backward compatibility

@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { ScheduleComponent, type BaseScheduleItem, type BaseEmployee } from '@jonaskenke/react-timeline-scheduler';
+import { ScheduleComponent, type BaseScheduleItem, type BaseGroup } from '@jonaskenke/react-timeline-scheduler';
 
 
-// Sample data
-const sampleGroups: BaseEmployee[] = [
-  { id: '1', name: 'John Doe', role: 'Developer', color: 'bg-blue-500' },
-  { id: '2', name: 'Jane Smith', role: 'Designer', color: 'bg-green-500' },
-  { id: '3', name: 'Bob Johnson', role: 'Manager', color: 'bg-orange-500' },
+// Sample data - Base items (resources) grouped by department
+const sampleGroups: BaseGroup[] = [
+  { id: '1', name: 'John Doe', role: 'Developer', color: 'bg-blue-500', groupId: 'engineering' },
+  { id: '2', name: 'Jane Smith', role: 'Designer', color: 'bg-green-500', groupId: 'design' },
+  { id: '3', name: 'Bob Johnson', role: 'Manager', color: 'bg-orange-500', groupId: 'engineering' },
+  { id: '4', name: 'Alice Brown', role: 'Senior Developer', color: 'bg-purple-500', groupId: 'engineering' },
+  { id: '5', name: 'Charlie Wilson', role: 'UX Designer', color: 'bg-pink-500', groupId: 'design' },
+  { id: '6', name: 'Diana Prince', role: 'Project Manager', color: 'bg-indigo-500' }, // No groupId - standalone
 ];
 
 const sampleItems: BaseScheduleItem[] = [
@@ -38,6 +41,15 @@ const sampleItems: BaseScheduleItem[] = [
     type: 'task',
   },
   {
+    id: '4',
+    employeeId: '3',
+    title: 'Sprint Planning',
+    date: '2025-11-10',
+    startTime: '13:00',
+    endTime: '15:00',
+    type: 'meeting',
+  },
+  {
     id: '5',
     employeeId: '1',
     title: 'Vacation Day',
@@ -53,11 +65,38 @@ const sampleItems: BaseScheduleItem[] = [
     allDay: true,
     type: 'sick',
   },
+  {
+    id: '7',
+    employeeId: '4',
+    title: 'Architecture Review',
+    date: '2025-11-11',
+    startTime: '11:00',
+    endTime: '12:30',
+    type: 'meeting',
+  },
+  {
+    id: '8',
+    employeeId: '5',
+    title: 'User Research',
+    date: '2025-11-11',
+    startTime: '09:00',
+    endTime: '12:00',
+    type: 'task',
+  },
+  {
+    id: '9',
+    employeeId: '6',
+    title: 'Client Meeting',
+    date: '2025-11-12',
+    startTime: '15:00',
+    endTime: '16:00',
+    type: 'meeting',
+  },
 ];
 
 function App() {
   const [items, setItems] = useState<BaseScheduleItem[]>(sampleItems);
-  const [employees] = useState<BaseEmployee[]>(sampleGroups);
+  const [groups, setGroups] = useState<BaseGroup[]>(sampleGroups);
 
   const handleItemClick = (item: BaseScheduleItem) => {
     console.log('Item clicked:', item);
@@ -84,7 +123,7 @@ function App() {
 
         <ScheduleComponent
           items={items}
-          groups={employees}
+          groups={groups}
           onItemClick={handleItemClick}
           onItemCreate={handleItemCreate}
           onItemUpdate={handleItemUpdate}
