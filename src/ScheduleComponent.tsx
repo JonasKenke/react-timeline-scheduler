@@ -32,7 +32,7 @@ import {
   ScheduleComponentProps,
   ViewMode,
   DisplayMode,
-  DEFAULT_ITEM_TYPES,
+  getDefaultItemTypes,
   EMPLOYEE_COLORS,
   BaseGroup,
 } from './types';
@@ -40,6 +40,7 @@ import { Button } from './components/ui/button';
 import { Card, CardHeader, CardTitle } from './components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from './components/ui/tabs';
 import { timeToMinutes, calculateItemPosition, calculateVerticalPosition } from './lib/scheduleHelpers';
+import { getTranslation } from './lib/translations';
 
 export default function ScheduleComponent<T extends { id: string; employeeId: string; title: string; date: string; startTime?: string; endTime?: string; allDay?: boolean; type?: string; color?: string; notes?: string; [key: string]: any }, G extends BaseGroup>({
   items,
@@ -47,7 +48,9 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
   viewMode: initialViewMode = 'week',
   displayMode: initialDisplayMode = 'calendar',
   currentDate: initialCurrentDate = new Date(),
-  itemTypes = DEFAULT_ITEM_TYPES,
+  locale = 'en',
+  customTranslations,
+  itemTypes = getDefaultItemTypes(locale),
   onItemClick,
   onItemCreate,
   onItemUpdate,
@@ -55,7 +58,6 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
   showControls = true,
   showLegend = true,
   legendItems,
-  locale = 'en',
   canCreate = true,
   canEdit = true,
   groupLabel = 'Employee',
@@ -75,6 +77,10 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
   const [draggedItem, setDraggedItem] = useState<T | null>(null);
   const [dropTarget, setDropTarget] = useState<{ groupId: string; date: Date; time?: string } | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Get translations based on locale prop and merge with custom translations
+  const defaultTranslations = getTranslation(locale);
+  const t = customTranslations ? { ...defaultTranslations, ...customTranslations } : defaultTranslations;
 
   // Convert string dates to Date objects for processing
   const processedItems = useMemo(() => {
@@ -328,26 +334,20 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
   return (
     <div className={`w-full ${className}`}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-        <div>
-          <h2 className="text-xl font-bold">Schedule</h2>
-          <p className="text-muted-foreground text-sm">Manage your schedule items</p>
-        </div>
-        {showControls && (
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button onClick={handleToday} variant="outline" size="sm">
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              Today
+      {showControls && (
+        <div className="flex justify-end gap-2 mb-4">
+          <Button onClick={handleToday} variant="outline" size="sm">
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {t.today}
+          </Button>
+          {canCreate && (
+            <Button onClick={() => handleCreateClick()} size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              {t.newItem}
             </Button>
-            {canCreate && (
-              <Button onClick={() => handleCreateClick()} size="sm">
-                <Plus className="mr-2 h-4 w-4" />
-                New Item
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* View Controls */}
       {showControls && (
@@ -370,7 +370,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
               {/* View Mode Controls */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex flex-col gap-2">
-                  <span className="text-sm font-medium text-muted-foreground">View</span>
+                  <span className="text-sm font-medium text-muted-foreground">{t.view}</span>
                   <Tabs>
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger
@@ -379,7 +379,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                         onClick={() => setDisplayMode('calendar')}
                       >
                         <CalendarIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                        Calendar
+                        {t.calendar}
                       </TabsTrigger>
                       <TabsTrigger
                         value="timeline"
@@ -387,14 +387,14 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                         onClick={() => setDisplayMode('timeline')}
                       >
                         <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                        Timeline
+                        {t.timeline}
                       </TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <span className="text-sm font-medium text-muted-foreground">Period</span>
+                  <span className="text-sm font-medium text-muted-foreground">{t.period}</span>
                   <Tabs>
                     <TabsList className="grid w-full grid-cols-4">
                       <TabsTrigger
@@ -402,28 +402,28 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                         className={`text-xs sm:text-sm px-1 sm:px-3 ${viewMode === 'day' ? 'bg-background text-foreground shadow-sm' : 'hover:bg-muted hover:text-foreground'}`}
                         onClick={() => setViewMode('day')}
                       >
-                        Day
+                        {t.day}
                       </TabsTrigger>
                       <TabsTrigger
                         value="week"
                         className={`text-xs sm:text-sm px-1 sm:px-3 ${viewMode === 'week' ? 'bg-background text-foreground shadow-sm' : 'hover:bg-muted hover:text-foreground'}`}
                         onClick={() => setViewMode('week')}
                       >
-                        Week
+                        {t.week}
                       </TabsTrigger>
                       <TabsTrigger
                         value="month"
                         className={`text-xs sm:text-sm px-1 sm:px-3 ${viewMode === 'month' ? 'bg-background text-foreground shadow-sm' : 'hover:bg-muted hover:text-foreground'}`}
                         onClick={() => setViewMode('month')}
                       >
-                        Month
+                        {t.month}
                       </TabsTrigger>
                       <TabsTrigger
                         value="year"
                         className={`text-xs sm:text-sm px-1 sm:px-3 ${viewMode === 'year' ? 'bg-background text-foreground shadow-sm' : 'hover:bg-muted hover:text-foreground'}`}
                         onClick={() => setViewMode('year')}
                       >
-                        Year
+                        {t.year}
                       </TabsTrigger>
                     </TabsList>
                   </Tabs>
@@ -492,7 +492,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                           onClick={() => handleCreateClick(undefined, day)}
                         >
                           <Plus className="h-4 w-4 mr-2" />
-                          Add
+                          {t.add}
                         </Button>
                       )}
                     </div>
@@ -524,7 +524,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                             <div className="flex-1 min-w-0">
                               <div className="font-semibold truncate">{item.title}</div>
                               <div className="text-sm text-muted-foreground">
-                                {item.group.name} • {item.allDay ? 'All Day' : `${item.startTime} - ${item.endTime}`}
+                                {item.group.name} • {item.allDay ? t.allDay : `${item.startTime} - ${item.endTime}`}
                               </div>
                               {item.notes && (
                                 <div className="text-sm text-muted-foreground mt-1">{item.notes}</div>
@@ -537,7 +537,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                       {allItems.length === 0 && (
                         <div className="text-center py-8 text-muted-foreground">
                           <Clock className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                          <p className="text-sm">No items for this day</p>
+                          <p className="text-sm">{t.noItemsForDay}</p>
                         </div>
                       )}
                     </div>
@@ -616,7 +616,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                             ))}
                             {allItems.length > 3 && (
                               <div className="text-xs text-muted-foreground text-center">
-                                +{allItems.length - 3} more
+                                +{allItems.length - 3} {t.moreItems}
                               </div>
                             )}
                           </div>
@@ -707,7 +707,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                             onClick={() => handleCreateClick(undefined, day)}
                           >
                             <Plus className="h-4 w-4 mr-2" />
-                            Add
+                            {t.add}
                           </Button>
                         )}
                       </div>
@@ -766,7 +766,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                   {groups.every(group => getItemsForGroupAndDate(group.id, currentDate).length === 0) && (
                     <div className="text-center py-12 text-muted-foreground">
                       <Clock className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                      <p>No items for this day</p>
+                      <p>{t.noItemsForDay}</p>
                     </div>
                   )}
                 </div>
@@ -808,13 +808,13 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
 
                           {monthItems.length === 0 && (
                             <div className="text-center py-4 text-muted-foreground text-sm">
-                              No items
+                              {t.noItems}
                             </div>
                           )}
 
                           {monthItems.length > 5 && (
                             <div className="text-xs text-muted-foreground text-center pt-2">
-                              +{monthItems.length - 5} more
+                              +{monthItems.length - 5} {t.moreItems}
                             </div>
                           )}
                         </div>
@@ -835,7 +835,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
           <div className="block sm:hidden">
             <div className="text-center py-8 text-muted-foreground">
               <BarChart3 className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Timeline view is available on larger screens</p>
+              <p className="text-sm">{t.timelineMobileMessage}</p>
             </div>
           </div>
 
@@ -1084,7 +1084,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                                             : `${(position.duration / 60 / (dateRange.length * 24)) * 100}%`,
                                           top: `${verticalLevel * 56 + 8}px`,
                                         }}
-                                        title={item.allDay ? `${item.title} (All Day)` : `${item.title} (${item.startTime}-${item.endTime})`}
+                                        title={item.allDay ? `${item.title} (${t.allDay})` : `${item.title} (${item.startTime}-${item.endTime})`}
                                         onClick={() => handleItemClick(item)}
                                         draggable={canEdit}
                                         onDragStart={(e) => handleDragStart(e, item)}
@@ -1092,7 +1092,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                                       >
                                         <div className="font-semibold truncate">{item.title}</div>
                                         {item.allDay ? (
-                                          <div className="text-xs opacity-90">All Day</div>
+                                          <div className="text-xs opacity-90">{t.allDay}</div>
                                         ) : (viewMode === 'day' ? position.duration >= 30 : position.duration >= 180) && (
                                           <div className="text-xs opacity-90">
                                             {item.startTime}-{item.endTime}
@@ -1308,7 +1308,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                                             : `${(position.duration / 60 / (dateRange.length * 24)) * 100}%`,
                                           top: `${verticalLevel * 56 + 8}px`,
                                         }}
-                                        title={item.allDay ? `${item.title} (All Day)` : `${item.title} (${item.startTime}-${item.endTime})`}
+                                        title={item.allDay ? `${item.title} (${t.allDay})` : `${item.title} (${item.startTime}-${item.endTime})`}
                                         onClick={() => handleItemClick(item)}
                                         draggable={canEdit}
                                         onDragStart={(e) => handleDragStart(e, item)}
@@ -1316,7 +1316,7 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
                                       >
                                         <div className="font-semibold truncate">{item.title}</div>
                                         {item.allDay ? (
-                                          <div className="text-xs opacity-90">All Day</div>
+                                          <div className="text-xs opacity-90">{t.allDay}</div>
                                         ) : (viewMode === 'day' ? position.duration >= 30 : position.duration >= 180) && (
                                           <div className="text-xs opacity-90">
                                             {item.startTime}-{item.endTime}

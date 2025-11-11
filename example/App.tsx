@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScheduleComponent, type BaseScheduleItem, type BaseGroup } from '@jonaskenke/react-timeline-scheduler';
+import { ScheduleComponent, type BaseScheduleItem, type BaseGroup, type Translations } from '@jonaskenke/react-timeline-scheduler';
 
 
 // Sample data - Base items (resources) grouped by department
@@ -97,6 +97,19 @@ const sampleItems: BaseScheduleItem[] = [
 function App() {
   const [items, setItems] = useState<BaseScheduleItem[]>(sampleItems);
   const [groups, setGroups] = useState<BaseGroup[]>(sampleGroups);
+  const [locale, setLocale] = useState<'en' | 'de' | 'es' | 'fr'>('en');
+  const [useCustomTranslations, setUseCustomTranslations] = useState(false);
+
+  // Custom translations example - override some strings
+  const customTranslations: Partial<Translations> = {
+    today: '📅 Today',
+    newItem: '✨ New Event',
+    allDay: '🌅 All Day',
+    calendar: '📆 Calendar',
+    timeline: '⏰ Timeline',
+    meeting: '👥 Meeting',
+    task: '📋 Task',
+  };
 
   const handleItemClick = (item: BaseScheduleItem) => {
     console.log('Item clicked:', item);
@@ -121,6 +134,33 @@ function App() {
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Schedule Component Demo</h1>
 
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2">Locale:</label>
+          <select
+            value={locale}
+            onChange={(e) => setLocale(e.target.value as 'en' | 'de' | 'es' | 'fr')}
+            className="px-3 py-2 border border-gray-300 rounded-md"
+          >
+            <option value="en">English</option>
+            <option value="de">Deutsch</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Custom Translations:</label>
+          <label className="inline-flex items-center">
+            <input
+              type="checkbox"
+              checked={useCustomTranslations}
+              onChange={(e) => setUseCustomTranslations(e.target.checked)}
+              className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+            />
+            <span className="ml-2 text-sm">Enable custom translations (with emojis)</span>
+          </label>
+        </div>
+
         <ScheduleComponent
           items={items}
           groups={groups}
@@ -138,7 +178,8 @@ function App() {
             { label: 'Vacation', color: 'bg-purple-500' },
             { label: 'Sick Leave', color: 'bg-yellow-500' },
           ]}
-          locale="en"
+          locale={locale}
+          customTranslations={useCustomTranslations ? customTranslations : undefined}
         />
 
         <div className="mt-8 p-4 bg-white rounded-lg shadow">

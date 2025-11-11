@@ -2,6 +2,8 @@
 export type ViewMode = "day" | "week" | "month" | "year";
 export type DisplayMode = "calendar" | "timeline";
 
+import type { Translations } from "./lib/translations";
+
 // Base interfaces for configurable data
 export interface BaseGroup {
   id: string;
@@ -69,6 +71,7 @@ export interface ScheduleComponentProps<
     icon?: string;
   }>;
   locale?: string;
+  customTranslations?: Partial<Translations>;
 
   // Permissions
   canCreate?: boolean;
@@ -76,36 +79,44 @@ export interface ScheduleComponentProps<
 }
 
 // Default configurations
-export const DEFAULT_ITEM_TYPES = {
-  default: {
-    label: "Event",
-    color: "bg-blue-500",
-  },
-  meeting: {
-    label: "Meeting",
-    color: "bg-green-500",
-  },
-  task: {
-    label: "Task",
-    color: "bg-orange-500",
-  },
-  break: {
-    label: "Break",
-    color: "bg-gray-500",
-  },
-  vacation: {
-    label: "Vacation",
-    color: "bg-purple-500",
-  },
-  holiday: {
-    label: "Holiday",
-    color: "bg-red-500",
-  },
-  sick: {
-    label: "Sick Leave",
-    color: "bg-yellow-500",
-  },
+import { getTranslation } from "./lib/translations";
+
+export const getDefaultItemTypes = (language?: string) => {
+  const t = getTranslation(language);
+  return {
+    default: {
+      label: t.event,
+      color: "bg-blue-500",
+    },
+    meeting: {
+      label: t.meeting,
+      color: "bg-green-500",
+    },
+    task: {
+      label: t.task,
+      color: "bg-orange-500",
+    },
+    break: {
+      label: t.break,
+      color: "bg-gray-500",
+    },
+    vacation: {
+      label: t.vacation,
+      color: "bg-purple-500",
+    },
+    holiday: {
+      label: t.holiday,
+      color: "bg-red-500",
+    },
+    sick: {
+      label: t.sickLeave,
+      color: "bg-yellow-500",
+    },
+  };
 };
+
+// Backward compatibility
+export const DEFAULT_ITEM_TYPES = getDefaultItemTypes();
 
 export const EMPLOYEE_COLORS = [
   "bg-pink-500",

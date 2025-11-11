@@ -203,23 +203,24 @@ In this example:
 
 ## �🔧 Props API
 
-| Prop           | Type                                             | Default      | Description                              |
-| -------------- | ------------------------------------------------ | ------------ | ---------------------------------------- |
-| `items`        | `BaseScheduleItem[]`                             | -            | **Required.** Array of schedule items    |
-| `groups`       | `BaseGroup[]`                                    | -            | **Required.** Array of groups/resources  |
-| `viewMode`     | `'day' \| 'week' \| 'month' \| 'year'`           | `'week'`     | Initial calendar view mode               |
-| `displayMode`  | `'calendar' \| 'timeline'`                       | `'calendar'` | Initial display mode                     |
-| `currentDate`  | `Date`                                           | `new Date()` | Initial date to display                  |
-| `itemTypes`    | `Record<string, {label: string, color: string}>` | -            | Configuration for item types             |
-| `onItemClick`  | `(item) => void`                                 | -            | Callback when item is clicked            |
-| `onItemCreate` | `(data) => void`                                 | -            | Callback when create action is triggered |
-| `onItemUpdate` | `(id, data) => void`                             | -            | Callback when update action is triggered |
-| `canCreate`    | `boolean`                                        | `true`       | Enable create functionality              |
-| `canEdit`      | `boolean`                                        | `true`       | Enable edit functionality                |
-| `showControls` | `boolean`                                        | `true`       | Show navigation controls                 |
-| `showLegend`   | `boolean`                                        | `true`       | Show item type legend                    |
-| `locale`       | `string`                                         | `'en'`       | Date locale for formatting               |
-| `className`    | `string`                                         | -            | Additional CSS classes                   |
+| Prop                 | Type                                             | Default      | Description                                |
+| -------------------- | ------------------------------------------------ | ------------ | ------------------------------------------ |
+| `items`              | `BaseScheduleItem[]`                             | -            | **Required.** Array of schedule items      |
+| `groups`             | `BaseGroup[]`                                    | -            | **Required.** Array of groups/resources    |
+| `viewMode`           | `'day' \| 'week' \| 'month' \| 'year'`           | `'week'`     | Initial calendar view mode                 |
+| `displayMode`        | `'calendar' \| 'timeline'`                       | `'calendar'` | Initial display mode                       |
+| `currentDate`        | `Date`                                           | `new Date()` | Initial date to display                    |
+| `itemTypes`          | `Record<string, {label: string, color: string}>` | -            | Configuration for item types               |
+| `onItemClick`        | `(item) => void`                                 | -            | Callback when item is clicked              |
+| `onItemCreate`       | `(data) => void`                                 | -            | Callback when create action is triggered   |
+| `onItemUpdate`       | `(id, data) => void`                             | -            | Callback when update action is triggered   |
+| `canCreate`          | `boolean`                                        | `true`       | Enable create functionality                |
+| `canEdit`            | `boolean`                                        | `true`       | Enable edit functionality                  |
+| `showControls`       | `boolean`                                        | `true`       | Show navigation controls                   |
+| `showLegend`         | `boolean`                                        | `true`       | Show item type legend                      |
+| `locale`             | `string`                                         | `'en'`       | Locale for date formatting and UI language |
+| `customTranslations` | `Partial<Translations>`                          | -            | Custom translation overrides               |
+| `className`          | `string`                                         | -            | Additional CSS classes                     |
 
 ---
 
@@ -276,6 +277,105 @@ The component uses Tailwind CSS classes. Override styles by passing a `className
 ### Theme Customization
 
 The component supports extensive theming through CSS custom properties and Tailwind utilities.
+
+---
+
+## 🌍 Internationalization
+
+The component supports multiple languages for UI elements and date formatting through the `locale` prop. The locale determines both the date formatting (using date-fns locales) and the UI language:
+
+```
+<ScheduleComponent
+  items={scheduleItems}
+  groups={groups}
+  locale="de" // German dates and UI
+  // or "en" (English), "es" (Spanish), "fr" (French)
+/>
+```
+
+### Supported Locales
+
+- **English** (`en`): Default locale
+- **Deutsch** (`de`): German
+- **Español** (`es`): Spanish
+- **Français** (`fr`): French
+
+### Custom Translations
+
+You can customize translations in two ways:
+
+#### 1. Using the `customTranslations` Prop
+
+Pass custom translations directly as a prop to override specific strings:
+
+```tsx
+import {
+  ScheduleComponent,
+  type Translations,
+} from "@jonaskenke/react-timeline-scheduler";
+
+const customTranslations: Partial<Translations> = {
+  today: "Heute",
+  newItem: "Neues Element",
+  allDay: "Ganztägig",
+  // ... override only the keys you want to customize
+};
+
+<ScheduleComponent
+  items={items}
+  groups={groups}
+  locale="de"
+  customTranslations={customTranslations}
+/>;
+```
+
+#### 2. Extending the Translation System
+
+For more advanced customization, you can extend the built-in translation system:
+
+```tsx
+import {
+  translations,
+  getTranslation,
+} from "@jonaskenke/react-timeline-scheduler";
+
+// Add a completely custom language
+translations["custom"] = {
+  view: "Vista",
+  period: "Periodo",
+  calendar: "Calendario",
+  timeline: "Cronograma",
+  day: "Día",
+  week: "Semana",
+  month: "Mes",
+  year: "Año",
+  today: "Hoy",
+  newItem: "Nuevo Elemento",
+  add: "Agregar",
+  noItemsForDay: "No hay elementos para este día",
+  noItems: "No hay elementos",
+  timelineMobileMessage:
+    "La vista de cronograma está disponible en pantallas más grandes",
+  moreItems: "más",
+  allDay: "Todo el día",
+  event: "Evento",
+  meeting: "Reunión",
+  task: "Tarea",
+  break: "Pausa",
+  vacation: "Vacaciones",
+  holiday: "Festivo",
+  sickLeave: "Baja médica",
+};
+
+// Use custom translation
+const customT = getTranslation("custom");
+```
+
+The `Translations` interface is exported for TypeScript support:
+
+```tsx
+import type { Translations } from "@jonaskenke/react-timeline-scheduler";
+```
 
 ---
 
