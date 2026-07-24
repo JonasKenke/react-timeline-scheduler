@@ -85,10 +85,12 @@ export default function ScheduleComponent<T extends { id: string; employeeId: st
 
   // Convert string dates to Date objects for processing
   const processedItems = useMemo(() => {
-    return items.map(item => ({
-      ...item,
-      dateObj: parseISO(item.date),
-    }));
+    return items
+      .filter(item => item != null)
+      .map(item => ({
+        ...item,
+        dateObj: parseISO(item.date),
+      }));
   }, [items]);
 
   // Calculate date ranges based on view mode
