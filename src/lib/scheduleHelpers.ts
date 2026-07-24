@@ -48,7 +48,11 @@ export const calculateVerticalPosition = (items: any[]) => {
 
   sortedItems.forEach((item) => {
     const itemStart = item.allDay ? 0 : timeToMinutes(item.startTime);
-    const itemEnd = item.allDay ? 24 * 60 : timeToMinutes(item.endTime);
+    let itemEnd = item.allDay ? 24 * 60 : timeToMinutes(item.endTime);
+    // Normalize overnight items: end wraps to next day
+    if (!item.allDay && itemEnd <= itemStart) {
+      itemEnd += 24 * 60;
+    }
 
     // Find the first level where this item doesn't overlap with existing items
     let assignedLevel = -1;
@@ -58,9 +62,13 @@ export const calculateVerticalPosition = (items: any[]) => {
         const existingStart = existingItem.allDay
           ? 0
           : timeToMinutes(existingItem.startTime);
-        const existingEnd = existingItem.allDay
+        let existingEnd = existingItem.allDay
           ? 24 * 60
           : timeToMinutes(existingItem.endTime);
+        // Normalize overnight existing items
+        if (!existingItem.allDay && existingEnd <= existingStart) {
+          existingEnd += 24 * 60;
+        }
         return !(itemEnd <= existingStart || itemStart >= existingEnd);
       });
 
