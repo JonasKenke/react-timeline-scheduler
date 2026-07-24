@@ -188,24 +188,21 @@ export function TimelineRow<T extends BaseScheduleItem>({
             {/* Current time line */}
             <CurrentTimeIndicator dateRange={dateRange} />
 
-            {/* Drop placeholder */}
-            {draggedItem &&
-              dropTarget &&
-              dropTarget.groupId === group.id && (
-                <DropPlaceholder
-                  draggedItem={draggedItem}
-                  dropTarget={dropTarget}
-                  viewMode={viewMode}
-                  computeDropPos={computeDropPos}
-                  snapToInterval={snapToInterval}
-                  timeToMinutes={timeToMinutes}
-                  t={t}
-                />
-              )}
+            {/* Drop placeholder - show when dragging, even without drop target */}
+            {draggedItem && (
+              <DropPlaceholder
+                draggedItem={draggedItem}
+                dropTarget={dropTarget}
+                viewMode={viewMode}
+                computeDropPos={computeDropPos}
+                snapToInterval={snapToInterval}
+                timeToMinutes={timeToMinutes}
+                t={t}
+              />
+            )}
 
             {/* Item cards */}
             {employeeItems
-              .filter((item) => item.id !== draggedItem?.id)
               .map((item, itemIndex) => {
                 const position = calculateItemPosition(item);
                 const verticalLevel = verticalLevels[itemIndex];
@@ -305,7 +302,7 @@ function DropPlaceholder<T extends BaseScheduleItem>({
   timeToMinutes,
   t,
 }: DropPlaceholderProps<T>) {
-  const pos = computeDropPos(dropTarget.date, dropTarget.time, draggedItem);
+  const pos = computeDropPos(dropTarget?.date, dropTarget?.time, draggedItem);
 
   return (
     <div
@@ -321,7 +318,7 @@ function DropPlaceholder<T extends BaseScheduleItem>({
         {draggedItem.allDay
           ? draggedItem.title
           : (() => {
-              const [hours, minutes] = (dropTarget.time || '00:00').split(':').map(Number);
+              const [hours, minutes] = (dropTarget?.time || '00:00').split(':').map(Number);
               let startMinutes = hours * 60 + minutes;
               if (viewMode === 'day' || viewMode === 'week') {
                 startMinutes = snapToInterval(startMinutes, 15);

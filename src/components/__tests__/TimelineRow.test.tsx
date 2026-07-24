@@ -113,3 +113,80 @@ describe('TimelineRow', () => {
     expect(row.className).toContain('border-t');
   });
 });
+
+describe('TimelineRow drag and drop', () => {
+  it('renders items even when one is being dragged', () => {
+    render(<TimelineRow {...createProps({ draggedItem: mockItem })} />);
+    // Item card should still be rendered (not filtered out)
+    expect(screen.getByText('Morning Standup')).toBeTruthy();
+  });
+
+  it('shows drop placeholder when draggedItem is set without dropTarget', () => {
+    const { container } = render(
+      <TimelineRow {...createProps({ draggedItem: mockItem })} />
+    );
+    // DropPlaceholder renders with dashed border
+    const placeholder = container.querySelector('.border-dashed');
+    expect(placeholder).toBeTruthy();
+    // The placeholder shows the item title with a fallback default time
+    expect(screen.getByText(/Morning Standup • 00:00-00:30/)).toBeTruthy();
+  });
+
+  it('shows time-snapped drop placeholder when dropTarget has time', () => {
+    const dropTarget = { groupId: 'g1', date: new Date('2026-07-24'), time: '10:00' };
+    render(<TimelineRow {...createProps({ draggedItem: mockItem, dropTarget })} />);
+    // The placeholder shows the snapped time derived from dropTarget.time
+    expect(screen.getByText(/Morning Standup • 10:00-10:30/)).toBeTruthy();
+  });
+
+  it('onDragStart callback fires with correct item', () => {
+    const onDragStart = vi.fn();
+    render(<TimelineRow {...createProps({ onDragStart })} />);
+    const itemEl = screen.getByText('Morning Standup');
+    fireEvent.dragStart(itemEl, { dataTransfer: { setData: vi.fn(), effectAllowed: '' } });
+    expect(onDragStart).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({ id: 'item1', title: 'Morning Standup' })
+    );
+  });
+
+  it('onDragOver callback fires with computed time', () => {
+    const onDragOver = vi.fn();
+    const { container } = render(<TimelineRow {...createProps({ onDragOver })} />);
+    const timelineArea = container.querySelector('.col-span-full') as HTMLElement;
+    fireEvent.dragOver(timelineArea, { clientX: 100, clientY: 50 });
+    expect(onDragOver).toHaveBeenCalledWith(
+      expect.any(Object),
+      'g1',
+      expect.any(Date),
+      expect.any(String)
+    );
+  });
+
+  it('onDrop callback fires with correct data', () => {
+    const onDrop = vi.fn();
+    const { container } = render(<TimelineRow {...createProps({ onDrop })} />);
+    const timelineArea = container.querySelector('.col-span-full') as HTMLElement;
+    fireEvent.drop(timelineArea, { clientX: 100, clientY: 50 });
+    expect(onDrop).toHaveBeenCalledWith(
+      expect.any(Object),
+      'g1',
+      expect.any(Date),
+      expect.any(String)
+    );
+  });
+
+  it('applies highlight class when dropTarget groupId matches', () => {
+    const dropTarget = { groupId: 'g1', date: new Date('2026-07-24') };
+    const { container } = render(<TimelineRow {...createProps({ dropTarget })} />);
+    const timelineArea = container.querySelector('.col-span-full') as HTMLElement;
+    expect(timelineArea.className).toContain('bg-primary/10');
+  });
+
+  it('does not apply highlight when dropTarget groupId is different', () => {
+    const dropTarget = { groupId: 'g2', date: new Date('2026-07-24') };
+    const { container } = render(<TimelineRow {...createProps({ dropTarget })} />);
+    const timelineArea = container.querySelector('.col-span-full') as HTMLElement;
+    expect(timelineArea.className).not.toContain('bg-primary/10');
+  });
+});
