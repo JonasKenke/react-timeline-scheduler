@@ -188,8 +188,8 @@ export function TimelineRow<T extends BaseScheduleItem>({
             {/* Current time line */}
             <CurrentTimeIndicator dateRange={dateRange} />
 
-            {/* Drop placeholder - show when dragging, even without drop target */}
-            {draggedItem && (
+            {/* Drop placeholder - show in hovered row, or in item's original group when drag starts */}
+            {draggedItem && (dropTarget?.groupId === group.id || (!dropTarget && draggedItem.employeeId === group.id)) && (
               <DropPlaceholder
                 draggedItem={draggedItem}
                 dropTarget={dropTarget}
@@ -281,7 +281,7 @@ export function TimelineRow<T extends BaseScheduleItem>({
 
 interface DropPlaceholderProps<T extends BaseScheduleItem = BaseScheduleItem> {
   draggedItem: T;
-  dropTarget: { groupId: string; date: Date; time?: string };
+  dropTarget: { groupId: string; date: Date; time?: string } | null;
   viewMode: 'day' | 'week' | 'month' | 'year';
   computeDropPos: (
     targetDate: Date,
